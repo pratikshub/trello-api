@@ -3,7 +3,7 @@
     justify-content: center;
 }
 .card-body{
-    width: 20em;
+    width: 22em;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -13,18 +13,17 @@ text-align: center;}
 ul{
     list-style: none;
 }
-.list-group{
-    display: flex;
-    flex-direction: column;
-    align-content: space-between
-}
-.list-group-item{
-    /* display: grid;
-    grid-template-columns: 1fr 3fr 1fr; */
-    /* width: 20em; */
-}
+
 .btn{
     position: absolute;
     right: 2%;
-    bottom: 15%;
+    bottom: 10%;
 }
+.complete{
+    text-decoration: line-through black;
+   
+}
+.incomplete{
+    text-decoration: none;
+}
+
