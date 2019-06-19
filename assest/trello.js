@@ -32,20 +32,17 @@ async function fetchChecklistItem() {
 
         });
     })
-    // $(document).on('change', 'input:checkbox', updateData);
+    $(document).on('change', 'input:checkbox', updateData);
     // $(document).on('click', 'a', deleteData);
 }
 
 fetchChecklistItem();
-// $('.list-group-item').on('click',function () {
-//     console.log("kfm")
-//     })
 
-
-// // document.getElementById("").addEventListener("click", myFunction);
-
-// function myFunction() {
-//   alert ("Hello World!");
-// }
-{/* <input type="checkbox" class="check" null="" data-state="incomplete" card-id="5d09bd6f9a14106641b4c37d" checkitem-id="5d09bd6f9a14106641b4c380"></input> */ }
-
+function updateData(event) {
+    event.preventDefault();
+    let cardId = $(this).attr('card-id');
+    let itemId = $(this).attr('checkitem-Id');
+    let state = this.checked ? "complete" : "incomplete";
+    fetch(`https://api.trello.com/1/cards/${cardId}/checkItem/${itemId}?state=${state}&key=${key}&token=${token}`, { method: 'PUT' })
+        .catch(error => console.log(error));
+}
