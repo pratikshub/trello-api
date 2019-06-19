@@ -24,7 +24,7 @@ async function fetchChecklistItem() {
             let html = `<li class="list-group-item">
             <input type="checkbox" class="check" ${item.state === "complete" ? "checked" : null} data-state="${item.state}" card-id=${element} checkitem-Id=${item.id}>
             <span class=${item.state} id="itemName">${item.name}</span>
-            <button class="btn btn-danger" id='delete'>X</button>
+            <button class="btn btn-danger" id='delete' card-id=${element} checkitem-Id=${item.id}>X</button>
             </li>
             `
             $('.list-group').append(html);
@@ -33,16 +33,24 @@ async function fetchChecklistItem() {
         });
     })
     $(document).on('change', 'input:checkbox', updateData);
-    // $(document).on('click', 'a', deleteData);
+    $(document).on('click', 'button', deleteData);
 }
 
 fetchChecklistItem();
 
 function updateData(event) {
     event.preventDefault();
+    console.log($(this).attr('card-id'))
     let cardId = $(this).attr('card-id');
     let itemId = $(this).attr('checkitem-Id');
     let state = this.checked ? "complete" : "incomplete";
     fetch(`https://api.trello.com/1/cards/${cardId}/checkItem/${itemId}?state=${state}&key=${key}&token=${token}`, { method: 'PUT' })
-        .catch(error => console.log(error));
+        .catch(error => console.log(error));   
+        
+}
+function deleteData(event) {
+    event.preventDefault();
+    let cardId = $(this).attr('card-id');
+    let itemId = $(this).attr('checkitem-Id');
+    fetch(`https://api.trello.com/1/cards/${cardId}/checkItem/${itemId}?key=${key}&token=${token}`, { method: 'DELETE' })
 }
