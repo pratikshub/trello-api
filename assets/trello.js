@@ -2,6 +2,7 @@ let key = 'b15cd266cff4107fb914ae08ff3fa96b';
 let token = 'd9c2b0cd9abcd9150dbcac22dfad5c8ab15e06667ec6298c274065d46ff4e40e';
 let listid = '5d09bd3783ab92349ebbbe77';
 
+
 async function fetchUrl(url) {
     try {
         let data = await fetch(url);
@@ -11,7 +12,7 @@ async function fetchUrl(url) {
         console.log(error)
     }
 }
-async function fetchCheckListId(listid, key, token) {
+async function fetchCardId(listid, key, token) {
     try {
         let data = await fetchUrl(`https://api.trello.com/1/lists/${listid}/cards?${key}&token=${token}`);
         return data.reduce((acc, element) => {
@@ -25,10 +26,11 @@ async function fetchCheckListId(listid, key, token) {
 }
 async function fetchChecklistItem() {
     try {
-        let idChecklists = await fetchCheckListId(listid, key, token);
+        let idChecklists = await fetchCardId(listid, key, token);
         idChecklists.forEach(async (element) => {
             url = `https://api.trello.com/1/cards/${element}/checklists?${key}'&token=${token}`;
             let checklist = await fetchUrl(url);
+            console.log(checklist)
             checklist.forEach(ele => {
                 displayItems(ele)
             })
@@ -48,6 +50,7 @@ function displayItems(element) {
     </li>
     `
         $('.list-group').append(html);
+
     });
     $(document).on('change', 'input:checkbox', updateData);
     $(document).on('click', 'button', deleteData);
@@ -90,12 +93,31 @@ async function deleteData(event) {
 }
 function adddata() {
     event.preventDefault();
-    let a = $(this).keyup(function (event) {
+    let defaultcard = '5d09bdadaad9ed65f8d04df2';
+    let card_Id = '5d09bd46c02ead88bf8eb5cb'
+    $(this).keyup(async function (event) {
         if (event.keyCode === 13) {
-            // $("#myButton").click();
-            console.log('item')
+            let check = $(this).val();
+            $(this).val('')
+            try {
+                let addRequest = await fetch(`https://api.trello.com/1/checklists/${defaultcard}/checkItems?name=${check}&key=${key}&token=${token}`, { method: 'POST' })
+                let item = await addRequest.json();
+                console.log(item);
+                if (addRequest.status === 200) {
+                    let html = `<li class="list-group-item">
+                <input type="checkbox" class=${item.state} ${item.state === "complete" ? "checked" : null} data-state="${item.state}" card-id=${card_Id} checkitem-Id=${item.id}>
+                <span class=${item.state} id="itemName">${item.name}</span>
+                <button class="btn btn-danger" id='delete' card-id=${card_Id} checkitem-Id=${item.id}>X</button>
+                </li>
+                `
+                    $('.list-group').append(html);
+                }
+            }
+            catch (error) {
+                console.log(error)
+            }
         }
     });
-    console.log(a)
 }
+
 
