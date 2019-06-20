@@ -15,42 +15,53 @@ async function fetchCheckListId(listid, key, token) {
 }
 async function fetchChecklistItem() {
     let idChecklists = await fetchCheckListId(listid, key, token);
-    console.log(idChecklists)
     idChecklists.forEach(async (element) => {
         url = `https://api.trello.com/1/cards/${element}/checklists?${key}'&token=${token}`;
         let checklist = await fetchUrl(url);
-
-        checklist['0']['checkItems'].forEach(async (item) => {
-            let html = `<li class="list-group-item">
-            <input type="checkbox" class="check" ${item.state === "complete" ? "checked" : null} data-state="${item.state}" card-id=${element} checkitem-Id=${item.id}>
-            <span class=${item.state} id="itemName">${item.name}</span>
-            <button class="btn btn-danger" id='delete' card-id=${element} checkitem-Id=${item.id}>X</button>
-            </li>
-            `
-            $('.list-group').append(html);
-
-
-        });
+        // console.log(...checklist);
+        checklist.forEach(ele => {
+            displayItems(ele, element)
+        })
     })
+
+}
+function displayItems(element, card_Id) {
+    element['checkItems'].forEach(async (item) => {
+        let html = `<li class="list-group-item">
+    <input type="checkbox" class=${item.state} ${item.state === "complete" ? "checked" : null} data-state="${item.state}" card-id=${card_Id} checkitem-Id=${item.id}>
+    <span class=${item.state} id="itemName">${item.name}</span>
+    <button class="btn btn-danger" id='delete' card-id=${card_Id} checkitem-Id=${item.id}>X</button>
+    </li>
+    `
+        $('.list-group').append(html);
+    });
     $(document).on('change', 'input:checkbox', updateData);
     $(document).on('click', 'button', deleteData);
-}
+    $(document).on('')
 
+}
 fetchChecklistItem();
 
-function updateData(event) {
+async function updateData(event) {
     event.preventDefault();
-    console.log($(this).attr('card-id'))
     let cardId = $(this).attr('card-id');
     let itemId = $(this).attr('checkitem-Id');
     let state = this.checked ? "complete" : "incomplete";
-    fetch(`https://api.trello.com/1/cards/${cardId}/checkItem/${itemId}?state=${state}&key=${key}&token=${token}`, { method: 'PUT' })
-        .catch(error => console.log(error));   
-        
+    let updateRequest = await fetch(`https://api.trello.com/1/cards/${cardId}/checkItem/${itemId}?state=${state}&key=${key}&token=${token}`, { method: 'PUT' })
+        .catch(error => console.log(error));
+        console.log(updateRequest)
+    if (updateRequest.status === 200) {
+        $(this).siblings('#itemName').attr('class', state)
+    }
+
 }
-function deleteData(event) {
+async function deleteData(event) {
     event.preventDefault();
     let cardId = $(this).attr('card-id');
     let itemId = $(this).attr('checkitem-Id');
-    fetch(`https://api.trello.com/1/cards/${cardId}/checkItem/${itemId}?key=${key}&token=${token}`, { method: 'DELETE' })
+   let deleteRequest=await  fetch(`https://api.trello.com/1/cards/${cardId}/checkItem/${itemId}?key=${key}&token=${token}`, { method: 'DELETE' })
+   .catch(error => console.log(error));
+    if (deleteRequest.status === 200) {
+    $(this).parent().remove();}
 }
+
