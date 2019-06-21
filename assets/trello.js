@@ -15,10 +15,10 @@ async function fetchUrl(url) {
 async function fetchCardId(listid, key, token) {
     try {
         let data = await fetchUrl(`https://api.trello.com/1/lists/${listid}/cards?${key}&token=${token}`);
-        return data.reduce((acc, element) => {
-            acc.push(element['id']);
-            return acc;
-        }, []);
+        return data.map((element) => {
+            return element['id'];
+            // return acc;
+        });
     }
     catch (error) {
         console.log(error)
@@ -26,11 +26,10 @@ async function fetchCardId(listid, key, token) {
 }
 async function fetchChecklistItem() {
     try {
-        let idChecklists = await fetchCardId(listid, key, token);
-        idChecklists.forEach(async (element) => {
-            url = `https://api.trello.com/1/cards/${element}/checklists?${key}'&token=${token}`;
+        let cardId = await fetchCardId(listid, key, token);
+        cardId.forEach(async (card) => {
+            url = `https://api.trello.com/1/cards/${card}/checklists?${key}'&token=${token}`;
             let checklist = await fetchUrl(url);
-            console.log(checklist)
             checklist.forEach(ele => {
                 displayItems(ele)
             })
@@ -52,10 +51,6 @@ function displayItems(element) {
         $('.list-group').append(html);
 
     });
-    $(document).on('change', 'input:checkbox', updateData);
-    $(document).on('click', 'button', deleteData);
-    $(document).on('keyup', 'input:text', adddata)
-
 }
 fetchChecklistItem();
 
@@ -69,7 +64,7 @@ async function updateData(event) {
         if (updateRequest.status === 200) {
             $(this).siblings('#itemName').attr('class', state)
         }
-
+    
     }
     catch (error) {
         console.log(error)
@@ -93,16 +88,15 @@ async function deleteData(event) {
 }
 function adddata() {
     event.preventDefault();
-    let defaultcard = '5d09bdadaad9ed65f8d04df2';
+    let defaultcheckList = '5d09bdadaad9ed65f8d04df2';
     let card_Id = '5d09bd46c02ead88bf8eb5cb'
-    $(this).keyup(async function (event) {
+    $('input[type="Text"').keyup(async function (event) {
         if (event.keyCode === 13) {
-            let check = $(this).val();
+            let inputdata = $(this).val()
             $(this).val('')
             try {
-                let addRequest = await fetch(`https://api.trello.com/1/checklists/${defaultcard}/checkItems?name=${check}&key=${key}&token=${token}`, { method: 'POST' })
+                let addRequest = await fetch(`https://api.trello.com/1/checklists/${defaultcheckList}/checkItems?name=${inputdata}&key=${key}&token=${token}`, { method: 'POST' })
                 let item = await addRequest.json();
-                console.log(item);
                 if (addRequest.status === 200) {
                     let html = `<li class="list-group-item">
                 <input type="checkbox" class=${item.state} ${item.state === "complete" ? "checked" : null} data-state="${item.state}" card-id=${card_Id} checkitem-Id=${item.id}>
@@ -111,6 +105,7 @@ function adddata() {
                 </li>
                 `
                     $('.list-group').append(html);
+
                 }
             }
             catch (error) {
@@ -120,4 +115,11 @@ function adddata() {
     });
 }
 
+function editData() {
+
+}
+
+$('#items').on('change', 'input', updateData);
+$('#items').on('click', 'button', deleteData);
+$('#input-text').on('keyup', 'input', adddata);
 
